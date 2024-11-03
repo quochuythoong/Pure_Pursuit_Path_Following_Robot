@@ -4,20 +4,18 @@ import time
 # ESP32 server IP address
 esp32_ip = "http://192.168.1.184"  
 
-def control_led(state):
-    """Send command to ESP32 to turn LED on or off."""
-    if state == "ON":
-        requests.get(f"{esp32_ip}/LED=ON")
-        print("LED turned ON")
-    elif state == "OFF":
-        requests.get(f"{esp32_ip}/LED=OFF")
-        print("LED turned OFF")
-    else:
-        print("Invalid state")
+def send_param(value):
+    try:
+        response = requests.get(f"{esp32_ip}/?param={value}")
+        if response.status_code == 200:
+            print(f"Sent param={value} successfully")
+        else:
+            print(f"Failed to send param={value}, status code:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error:", e)
 
-# Example usage
-while True:
-    control_led("ON")
-    time.sleep(1)
-    control_led("OFF")
-    time.sleep(1)
+# while(True):
+#     for i in range(0,255):
+#         send_param(i)
+
+send_param(0)
