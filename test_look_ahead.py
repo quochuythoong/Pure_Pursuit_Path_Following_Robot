@@ -29,17 +29,6 @@ def interpolate_waypoints(waypoints, step_distance=1.0):
     return interpolated_points
 
 def find_closest_point(current_position, waypoints, look_ahead_distance):
-    """
-    Find the point closest to the specified look-ahead distance from the current position.
-
-    Parameters:
-    - current_position: The starting position as a tuple (x, y)
-    - waypoints: List of tuples representing the interpolated waypoints
-    - look_ahead_distance: The target distance to look ahead
-
-    Returns:
-    - closest_point: The waypoint closest to the look-ahead distance
-    """
     closest_point = None
     min_distance_diff = float('inf')
 
@@ -55,16 +44,6 @@ def find_closest_point(current_position, waypoints, look_ahead_distance):
     return closest_point
 
 def plot_waypoints_and_closest(waypoints, interpolated_points, current_position, closest_point, look_ahead_distance):
-    """
-    Plot the original waypoints, interpolated points, and the look-ahead distance circle.
-
-    Parameters:
-    - waypoints: List of tuples representing the original waypoints
-    - interpolated_points: List of tuples representing the interpolated waypoints
-    - current_position: The starting position
-    - closest_point: The waypoint closest to the look-ahead distance
-    - look_ahead_distance: The look-ahead distance to visualize as a circle
-    """
     waypoint_x, waypoint_y = zip(*waypoints)
     interp_x, interp_y = zip(*interpolated_points)
     
@@ -77,7 +56,6 @@ def plot_waypoints_and_closest(waypoints, interpolated_points, current_position,
     # Draw the look-ahead distance as a circle
     look_ahead_circle = plt.Circle(current_position, look_ahead_distance, color='cyan', fill=False, linestyle='--', label="Look-Ahead Distance")
     plt.gca().add_patch(look_ahead_circle)
-
     plt.grid(True)
     plt.xlabel("X")
     plt.ylabel("Y")
@@ -86,22 +64,16 @@ def plot_waypoints_and_closest(waypoints, interpolated_points, current_position,
     plt.axis('equal')  # Ensure the circle appears round
     plt.show()
 
-# Example usage
 waypoints = [(1, 1), (6, 4), (6, 12)]
 step_distance = 1.0
 interpolated_waypoints = interpolate_waypoints(waypoints, step_distance)
-
-current_position = (1, 1)
+print(interpolated_waypoints)
+current_position = (3, 2)
 look_ahead_distance = 1.5
 
 closest_point = find_closest_point(current_position, interpolated_waypoints, look_ahead_distance)
 
-print("Interpolated Waypoints:")
-for point in interpolated_waypoints:
-    print(point)
-
-print("\nClosest Point to Look-Ahead Distance:")
-print(closest_point)
+#print(closest_point)
 
 # Plot the waypoints, current position, look-ahead point, and look-ahead distance circle
 plot_waypoints_and_closest(waypoints, interpolated_waypoints, current_position, closest_point, look_ahead_distance)

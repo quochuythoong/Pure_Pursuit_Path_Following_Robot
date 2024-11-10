@@ -71,7 +71,7 @@ while True:
             # Calculate the center of the marker (mean of the corner points)
             cx = int(np.mean(points[:, 0]))  # X coordinate of the center
             cy = int(np.mean(points[:, 1]))  # Y coordinate of the center
-
+            center_coordinate = (cx, cy)
             # Draw a circle at the center of the marker
             cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)  # Green circle at the center
 
@@ -85,7 +85,7 @@ while True:
             end_x = int(cx + arrow_length * np.cos(angle * np.pi / 180))
             end_y = int(cy + arrow_length * np.sin(angle * np.pi / 180))
             cv2.arrowedLine(frame, (cx, cy), (end_x, end_y), (0, 255, 0), 2)  # Green arrow
-
+            end_point_arrow = (end_x, end_y)
             # Increase offsets to move the text further from the center
             text_offset_x = 100
             text_offset_y = 50

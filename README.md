@@ -3,10 +3,10 @@ Description:
 - An autonomous vehicle follows a chosen paths formed by multiple waypoints
 
 Approach:
-- Camera (bird-view) to detect the vehicle position (x-y coordinates) and its vector
-- Create a simple GUI to interact
-- Use computer to Stream - Calculate (Pure Pursuit algorithm) - Sending PWM (Pure Pursuit angular velocity output ...)
-- ESP32 to receive PWM and drive the vehicle
+- Camera (bird-view) to detect the vehicle position (x-y coordinates) and its vector : Done
+- Create a simple GUI to interact and get waypoints : Done
+- Use computer to Stream - Calculate (Pure Pursuit algorithm) - Sending rpm (Pure Pursuit angular velocity output ...) : Done
+- ESP32 to receive left and right motor speed from client : Done
 
 How-to:
 - Simple GUI
