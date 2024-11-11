@@ -1,5 +1,6 @@
 # Frame dimensions
 frame_height = 480  
+frame_width = 640
 
 # Buttons positions and dimensions
 start_button_pos = (10, 30)
