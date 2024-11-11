@@ -1,6 +1,10 @@
 import numpy as np
 
 def find_closest_point(current_position, waypoints, look_ahead_distance, error_tolerance=1.0):
+    # Check if current_position is valid (has two coordinates)
+    if not current_position or len(current_position) != 2:
+        return None
+
     closest_point = None
     min_distance_diff = float('inf')
     closest_index = -1
