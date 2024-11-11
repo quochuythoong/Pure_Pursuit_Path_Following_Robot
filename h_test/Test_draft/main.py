@@ -42,7 +42,7 @@ while True:
 
     # Draw center and orientation
     if corners:
-        center_coordinate, end_point_arrow, angle = openCV.draw_center_and_orientation(frame, corners, frame_height)
+        center_coordinate, end_point_arrow, angle = openCV.draw_center_and_orientation(frame, corners, frame_height, frame_width)
 
     # Draw clicked points
     if clicked_points:
