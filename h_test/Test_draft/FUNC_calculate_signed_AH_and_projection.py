@@ -23,4 +23,6 @@ def calculate_signed_AH_and_projection(A, B, C):
     else:
         signed_distance = -AH_magnitude  # H is on the opposite side of B with respect to A
 
+    signed_distance = signed_distance * 0.0024245 # Convert pixel to meter in real life
+
     return projection_point.tolist(), signed_distance

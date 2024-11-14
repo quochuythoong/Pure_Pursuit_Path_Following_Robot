@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import openCV
-from utils import frame_height, frame_width, start_button_pos, reset_button_pos, button_width, button_height, ConstVelocity, LookAHead_dist, Wheels_dist
+from client_control import send_params
+from utils import frame_height, frame_width, start_button_pos, reset_button_pos, button_width, button_height, ConstVelocity, LookAHead_dist, LookAHead_dist_RealLife, Wheels_dist
 from pure_pursuit import calculate_omega, calculate_wheel_velocities, velocities_to_RPM
 from FUNC_mouse_callback import mouse_callback
 from FUNC_interpolate_waypoints import interpolate_waypoints
@@ -14,6 +15,9 @@ clicked_points = []
 center_coordinate = ()
 end_point_arrow = ()
 start_pressed = [False]
+interpolated_waypoints = []
+PWM1 = 0
+PWM2 = 0
 
 # Setup camera and window
 cap = openCV.initialize_camera()
@@ -36,9 +40,15 @@ while True:
 
     # Detect ArUco markers
     corners, ids = openCV.detect_aruco_markers(gray, aruco_dict, parameters)
-    
+
     if ids is not None and start_pressed[0]:
         frame = openCV.draw_detected_markers(frame, corners, ids)
+        if (len(interpolated_waypoints) < 1) and (len(clicked_points) > 2):
+            interpolated_waypoints = interpolate_waypoints(clicked_points)
+    else:
+        interpolated_waypoints = []
+        PWM1 = 0
+        PWM2 = 0
 
     # Draw center and orientation
     if corners:
@@ -50,20 +60,30 @@ while True:
 
     # Interpolation and signed distance calculation
     if len(clicked_points) > 2:
-        interpolated_waypoints = interpolate_waypoints(clicked_points)
+        
         if interpolated_waypoints:
             closest_point = find_closest_point(center_coordinate, interpolated_waypoints, LookAHead_dist)
             if closest_point:
+                #print("Closest point:", closest_point)
+
                 projection, signed_distance = calculate_signed_AH_and_projection(center_coordinate, end_point_arrow, closest_point)
-                print(f"Projection: {projection}, Signed Distance: {signed_distance}")
+                # print(f"Projection: {projection}, Signed Distance: {signed_distance}")
 
                 # Calculate omega and wheel velocities
-                omega = calculate_omega(signed_distance, LookAHead_dist)
+                omega = calculate_omega(signed_distance, ConstVelocity, LookAHead_dist_RealLife)
                 R = ConstVelocity / omega if omega != 0 else float('inf')
                 v1, v2 = calculate_wheel_velocities(omega, R, Wheels_dist)
-                rpm1, rpm2 = velocities_to_RPM(v1, v2)
-                print("RPM Left Wheel:", rpm1)
-                print("RPM Right Wheel:", rpm2)
+                PWM1, PWM2 = velocities_to_RPM(v1, v2)
+                print("PWM Left Wheel:", PWM1)
+                print("PWM Right Wheel:", PWM2)
+
+    # Approaches the final point, stop the robot
+    if (len(interpolated_waypoints) < 2):
+        PWM1 = 0
+        PWM2 = 0
+
+    # Send PWM1, PWM2 to client
+    send_params(PWM1, PWM2)
 
     # Draw buttons
     draw_buttons(frame, start_button_pos, reset_button_pos, button_width, button_height)
@@ -76,3 +96,4 @@ while True:
         break
 
 openCV.release_camera(cap)
+

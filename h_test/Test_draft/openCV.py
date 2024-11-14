@@ -3,7 +3,7 @@ import numpy as np
 
 # Initialize OpenCV components and shared variables
 def initialize_camera():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     return cap
 
 def initialize_window(window_name, mouse_callback, callback_params):
@@ -70,9 +70,6 @@ def draw_clicked_points(frame, clicked_points, frame_height):
         if i > 0:
             cv2.line(frame, (clicked_points[i - 1][0], frame_height - clicked_points[i - 1][1]), 
                      (clicked_points[i][0], frame_height - clicked_points[i][1]), (255, 0, 0), 2)
-    if len(clicked_points) >= 3:
-        cv2.line(frame, (clicked_points[-1][0], frame_height - clicked_points[-1][1]),
-                 (clicked_points[0][0], frame_height - clicked_points[0][1]), (255, 0, 0), 2)
 
 def display_text(frame, text, position):
     cv2.putText(frame, text, position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)

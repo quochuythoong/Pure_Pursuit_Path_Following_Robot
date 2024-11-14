@@ -21,4 +21,6 @@ def find_closest_point(current_position, waypoints, look_ahead_distance, error_t
     if closest_index >= 0:
         del waypoints[:closest_index]
 
+    print("Waypoints:", len(waypoints))
+
     return closest_point
