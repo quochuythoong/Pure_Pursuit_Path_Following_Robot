@@ -2,20 +2,18 @@ import requests
 import time
 
 # ESP32 server IP address
-esp32_ip = "http://192.168.1.184"  
+esp32_ip = "http://192.168.1.12"
 
-def send_param(value):
+def send_params(left, right):
     try:
-        response = requests.get(f"{esp32_ip}/?param={value}")
+        response = requests.get(f"{esp32_ip}/?left={left}&right={right}")
         if response.status_code == 200:
-            print(f"Sent param={value} successfully")
+            print(f"Sent left={left}, right={right} successfully")
         else:
-            print(f"Failed to send param={value}, status code:", response.status_code)
+            print(f"Failed to send left={left}, right={right}, status code:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error:", e)
 
-# while(True):
-#     for i in range(0,255):
-#         send_param(i)
-
-send_param(0)
+# Example usage:
+send_params(00, 00)
+time.sleep(1)
