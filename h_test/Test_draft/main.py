@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import openCV
+import time
 from client_control import send_params
 from utils import frame_height, frame_width, start_button_pos, reset_button_pos, button_width, button_height, ConstVelocity, LookAHead_dist, LookAHead_dist_RealLife, Wheels_dist
 from pure_pursuit import calculate_omega, calculate_wheel_velocities, velocities_to_RPM
@@ -16,6 +17,8 @@ center_coordinate = ()
 end_point_arrow = ()
 start_pressed = [False]
 interpolated_waypoints = []
+flag_clicked_point_added = False
+flag_end_waypoint = False
 PWM1 = 0
 PWM2 = 0
 
@@ -29,17 +32,17 @@ openCV.initialize_window(
 
 # ArUco setup
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
-parameters = cv2.aruco.DetectorParameters()
+parameters = cv2.aruco.DetectorParameters()  
 
 #__main__
 while True:
     # Draw buttons
-    draw_buttons(frame, start_button_pos, reset_button_pos, button_width, button_height)
+    
     result = openCV.process_frame(cap)
     if result is None:
         break
     frame, gray = result
-
+    draw_buttons(frame, start_button_pos, reset_button_pos, button_width, button_height)
     # Detect ArUco markers
     corners, ids = openCV.detect_aruco_markers(gray, aruco_dict, parameters)
 
@@ -49,14 +52,21 @@ while True:
     
     if ids is not None and start_pressed[0]:
         frame = openCV.draw_detected_markers(frame, corners, ids)
-        clicked_points = center_coordinate + clicked_points
-        if (len(interpolated_waypoints) < 1) and (len(clicked_points) > 2):
-            interpolated_waypoints = interpolate_waypoints(clicked_points)
-    else:
-        interpolated_waypoints = []
+        print(f"Current waypoint len: {len(interpolated_waypoints)}")
+        #print(clicked_points)
+        if (len(interpolated_waypoints) < 1) and (len(clicked_points) >= 1):
+            if flag_clicked_point_added == False:
+                clicked_points.insert(0,center_coordinate)
+                flag_clicked_point_added = True
+                interpolated_waypoints =interpolate_waypoints(clicked_points)
+        if len(interpolated_waypoints) <= 5:
+            flag_end_waypoint = True
+    elif start_pressed[0] == False:
+        print("Delete here?????")
+        interpolated_waypoints.clear()
+        flag_clicked_point_added = False
         PWM1 = 0
         PWM2 = 0
-
     # Draw clicked points
     if clicked_points:
         openCV.draw_clicked_points(frame, clicked_points, frame_height)
@@ -65,13 +75,11 @@ while True:
     if len(clicked_points) > 1:
         
         if interpolated_waypoints:
-            closest_point = find_closest_point(center_coordinate, interpolated_waypoints, LookAHead_dist)
+            closest_point, interpolated_waypoints = find_closest_point(center_coordinate, interpolated_waypoints, LookAHead_dist)
             if closest_point:
                 #print("Closest point:", closest_point)
-
                 projection, signed_distance = calculate_signed_AH_and_projection(center_coordinate, end_point_arrow, closest_point)
                 # print(f"Projection: {projection}, Signed Distance: {signed_distance}")
-
                 # Calculate omega and wheel velocities
                 omega = calculate_omega(signed_distance, ConstVelocity, LookAHead_dist_RealLife)
                 R = ConstVelocity / omega if omega != 0 else float('inf')
@@ -81,15 +89,13 @@ while True:
                 print("PWM Right Wheel:", PWM2)
 
     # Approaches the final point, stop the robot
-    if (len(interpolated_waypoints) < 2):
+    if (len(interpolated_waypoints)  <= 5):
         PWM1 = 0
         PWM2 = 0
-
+    time.sleep(0.05)
     # Send PWM1, PWM2 to client
     send_params(PWM1, PWM2)
 
-    
-    
     # Display the frame
     cv2.imshow("2D ArUco Marker Detection and Vector", frame)
     

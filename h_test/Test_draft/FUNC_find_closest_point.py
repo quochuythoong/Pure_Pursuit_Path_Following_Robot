@@ -8,19 +8,22 @@ def find_closest_point(current_position, waypoints, look_ahead_distance, error_t
     closest_point = None
     min_distance_diff = float('inf')
     closest_index = -1
+    tempList = waypoints.copy()
 
     for i, point in enumerate(waypoints):
-        distance = np.linalg.norm(np.array(current_position) - np.array(point))
-        distance_diff = abs(distance - look_ahead_distance)
-        
-        if distance_diff < min_distance_diff and distance_diff <= error_tolerance:
-            min_distance_diff = distance_diff
-            closest_point = point
-            closest_index = i
+        if i < (look_ahead_distance + 5):
+            distance = np.linalg.norm(np.array(current_position) - np.array(point))
+            distance_diff = abs(distance - look_ahead_distance)
+            
+            if distance_diff < min_distance_diff and distance_diff <= error_tolerance:
+                min_distance_diff = distance_diff
+                closest_point = point
+                closest_index = i
+    print("Waypoints:", len(waypoints))
 
     if closest_index >= 0:
-        del waypoints[:closest_index]
+        tempList=  tempList[closest_index:]
 
     print("Waypoints:", len(waypoints))
 
-    return closest_point
+    return closest_point, tempList

@@ -31,7 +31,7 @@ def draw_center_and_orientation(frame, corners, frame_height, frame_width):
         
         # Calculate the center coordinates
         cx, cy = int(np.mean(points[:, 0])), frame_height - int(np.mean(points[:, 1]))
-        center_coordinate = [cx, cy]
+        center_coordinate = (cx, cy)
         
         # Calculate the orientation angle
         vec_x, vec_y = points[1][0] - points[0][0], points[0][1] - points[1][1]
