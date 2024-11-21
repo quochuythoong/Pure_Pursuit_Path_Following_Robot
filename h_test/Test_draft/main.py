@@ -33,6 +33,8 @@ parameters = cv2.aruco.DetectorParameters()
 
 #__main__
 while True:
+    # Draw buttons
+    draw_buttons(frame, start_button_pos, reset_button_pos, button_width, button_height)
     result = openCV.process_frame(cap)
     if result is None:
         break
@@ -41,8 +43,13 @@ while True:
     # Detect ArUco markers
     corners, ids = openCV.detect_aruco_markers(gray, aruco_dict, parameters)
 
+    # Draw center and orientation
+    if corners:
+        center_coordinate, end_point_arrow, angle = openCV.draw_center_and_orientation(frame, corners, frame_height, frame_width)
+    
     if ids is not None and start_pressed[0]:
         frame = openCV.draw_detected_markers(frame, corners, ids)
+        clicked_points = center_coordinate + clicked_points
         if (len(interpolated_waypoints) < 1) and (len(clicked_points) > 2):
             interpolated_waypoints = interpolate_waypoints(clicked_points)
     else:
@@ -50,16 +57,12 @@ while True:
         PWM1 = 0
         PWM2 = 0
 
-    # Draw center and orientation
-    if corners:
-        center_coordinate, end_point_arrow, angle = openCV.draw_center_and_orientation(frame, corners, frame_height, frame_width)
-
     # Draw clicked points
     if clicked_points:
         openCV.draw_clicked_points(frame, clicked_points, frame_height)
 
     # Interpolation and signed distance calculation
-    if len(clicked_points) > 2:
+    if len(clicked_points) > 1:
         
         if interpolated_waypoints:
             closest_point = find_closest_point(center_coordinate, interpolated_waypoints, LookAHead_dist)
@@ -85,8 +88,7 @@ while True:
     # Send PWM1, PWM2 to client
     send_params(PWM1, PWM2)
 
-    # Draw buttons
-    draw_buttons(frame, start_button_pos, reset_button_pos, button_width, button_height)
+    
     
     # Display the frame
     cv2.imshow("2D ArUco Marker Detection and Vector", frame)
