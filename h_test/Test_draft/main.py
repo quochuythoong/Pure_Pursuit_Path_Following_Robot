@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import openCV
+import math
 import time
 from client_control import send_params
 from utils import frame_height, frame_width, start_button_pos, reset_button_pos, button_width, button_height, ConstVelocity, LookAHead_dist, LookAHead_dist_RealLife, Wheels_dist
@@ -19,9 +20,11 @@ start_pressed = [False]
 interpolated_waypoints = []
 flag_clicked_point_added = False
 flag_end_waypoint = False
+latest_waypoint = ()
+distance_current = 0
 PWM1 = 0
 PWM2 = 0
-
+# closest_point = 0
 # Setup camera and window
 cap = openCV.initialize_camera()
 openCV.initialize_window(
@@ -59,12 +62,26 @@ while True:
                 clicked_points.insert(0,center_coordinate)
                 flag_clicked_point_added = True
                 interpolated_waypoints =interpolate_waypoints(clicked_points)
-        if len(interpolated_waypoints) <= 5:
-            flag_end_waypoint = True
+        if len(interpolated_waypoints) <= 10:
+            distance_current = math.sqrt((latest_waypoint[0] - center_coordinate[0])**2 + (latest_waypoint[1] - center_coordinate[1])**2)
+            if distance_current <= 15:
+                flag_end_waypoint = True
+            else:
+                projection, signed_distance = calculate_signed_AH_and_projection(center_coordinate, end_point_arrow, latest_waypoint)
+                # print(f"Projection: {projection}, Signed Distance: {signed_distance}")
+                # Calculate omega and wheel velocities
+                omega = calculate_omega(signed_distance, ConstVelocity, LookAHead_dist_RealLife)
+                R = ConstVelocity / omega if omega != 0 else float('inf')
+                v1, v2 = calculate_wheel_velocities(omega, R, Wheels_dist)
+                PWM1, PWM2 = velocities_to_RPM(v1, v2)
+                print("PWM Left Wheel:", PWM1)
+                print("PWM Right Wheel:", PWM2)
+
     elif start_pressed[0] == False:
-        print("Delete here?????")
+        #print("Add point")
         interpolated_waypoints.clear()
         flag_clicked_point_added = False
+        flag_end_waypoint = False
         PWM1 = 0
         PWM2 = 0
     # Draw clicked points
@@ -77,8 +94,13 @@ while True:
         if interpolated_waypoints:
             closest_point, interpolated_waypoints = find_closest_point(center_coordinate, interpolated_waypoints, LookAHead_dist)
             if closest_point:
+                latest_waypoint = closest_point
+                cv2.line(frame, 
+                 (int(center_coordinate[0]), int(-(center_coordinate[1]-frame_height))), 
+                 (int(closest_point[0]), int(-(closest_point[1]-frame_height))), 
+                 (0, 255, 255), 2)
                 #print("Closest point:", closest_point)
-                projection, signed_distance = calculate_signed_AH_and_projection(center_coordinate, end_point_arrow, closest_point)
+                projection, signed_distance = calculate_signed_AH_and_projection(center_coordinate, end_point_arrow, latest_waypoint)
                 # print(f"Projection: {projection}, Signed Distance: {signed_distance}")
                 # Calculate omega and wheel velocities
                 omega = calculate_omega(signed_distance, ConstVelocity, LookAHead_dist_RealLife)
@@ -89,7 +111,7 @@ while True:
                 print("PWM Right Wheel:", PWM2)
 
     # Approaches the final point, stop the robot
-    if (len(interpolated_waypoints)  <= 5):
+    if flag_end_waypoint:
         PWM1 = 0
         PWM2 = 0
     time.sleep(0.05)
@@ -104,4 +126,5 @@ while True:
         break
 
 openCV.release_camera(cap)
+send_params(0, 0)
 

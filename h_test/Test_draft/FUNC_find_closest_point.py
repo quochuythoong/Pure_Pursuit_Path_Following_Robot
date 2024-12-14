@@ -11,7 +11,7 @@ def find_closest_point(current_position, waypoints, look_ahead_distance, error_t
     tempList = waypoints.copy()
 
     for i, point in enumerate(waypoints):
-        if i < (look_ahead_distance + 5):
+        if i < (look_ahead_distance + 20):
             distance = np.linalg.norm(np.array(current_position) - np.array(point))
             distance_diff = abs(distance - look_ahead_distance)
             

@@ -3,11 +3,15 @@ import numpy as np
 
 # Initialize OpenCV components and shared variables
 def initialize_camera():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     return cap
 
 def initialize_window(window_name, mouse_callback, callback_params):
-    cv2.namedWindow(window_name)
+    #cv2.namedWindow(window_name)
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(window_name, 1920, 1080)
     cv2.setMouseCallback(window_name, mouse_callback, callback_params)
 
 def process_frame(cap):
